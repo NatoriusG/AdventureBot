@@ -15,6 +15,7 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+	print('message detected:\n- message channel: "{}"\n- message content: "{}"'.format(message.channel.name, message.content))
 
 	if message.channel.name == CHANNEL:
 		await client.send_message(message.channel, 'Detected message in channel {}: {}'.format(message.channel.name, message.content))
