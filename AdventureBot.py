@@ -1,7 +1,7 @@
 import discord
 import asyncio
 
-TOKEN = 'NDg5MTEzOTE1MTYzMjc5Mzcx.DnmM2A.8np5scfrdhim91QCseqj1sp3pLk'
+TOKEN = open('.advtoken').readline()
 CHANNEL = 'land-of-adventure'
 
 client = discord.Client()
@@ -15,10 +15,48 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-	print('message detected:\n- message channel: "{}"\n- message content: "{}"'.format(message.channel.name, message.content))
 
-	if message.channel.name == CHANNEL:
-		await client.send_message(message.channel, 'Detected message in channel {}: {}'.format(message.channel.name, message.content))
+	if message.channel.name == CHANNEL and message.author.id != client.user.id:
+	
+		print('message detected:\n- message channel name: "{}"\n- message channel id: "{}"\n- author account name: "{}"\n- author display name: "{}"\n- author ID: "{}"\n- message content: "{}"'.format(
+				message.channel.name, message.channel.id, message.author.name, message.author.display_name, message.author.id, message.content))
+
+		if message.content == 'advbot_clean':
+
+			print('deleting...')
+
+			async for log in client.logs_from(message.channel):
+				if log.author.id == client.user.id:
+					print('- found message: {}'.format(log.content))
+					await client.delete_message(log)
+
+		elif message.content == 'advbot_nuke':
+
+			await client.send_message(message.channel, 'Are you sure? (y/n)')
+		
+			ans = await client.wait_for_message(timeout=10, author=message.author, channel=message.channel)
+			if ans != None and ans.content == 'y':
+				
+				messages = []
+				async for log in client.logs_from(message.channel):
+					messages.append(log)
+				print('deleting all messages')
+				await client.delete_messages(messages)
+
+				# Run a second time to clear older messages
+				asyncio.sleep(3)
+				async for log in client.logs_from(message.channel):
+					if log != None:
+						print('clearing additional messages')
+						await client.delete_message(log)
+
+			else:
+				await client.send_message(message.channel, 'Nuke cancelled.')
+
+		else:
+
+			await client.send_message(message.channel, 'message detected:\n- message channel name: "{}"\n- message channel id: "{}"\n- author account name: "{}"\n- author display name: "{}"\n- author ID: "{}"\n- message content: "{}"'.format(
+			message.channel.name, message.channel.id, message.author.name, message.author.display_name, message.author.id, message.content))
 
 #	if message.content.startswith('_test'):
 #		counter = 0
